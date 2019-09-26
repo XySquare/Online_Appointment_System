@@ -1,13 +1,17 @@
 import React from 'react';
 import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
 import Login from './Page/Login.js'
+import Register from './Page/Register.js'
+import Dashboard from './Page/Client/Dashboard.js'
 
 function App() {
   return (
     <BrowserRouter>
       <Switch>
         <Route path="/" exact component={Login} />
-        <PrivateRoute path="/dashboard" component={Login} />
+        <Route path="/register" exact component={Register} />
+        <Route path="/client" component={Dashboard} />
+        <PrivateRoute path="/dummy" component={Login} />
         <Route render={props => <Redirect to={{pathname: "/",}}/>} />
       </Switch>
     </BrowserRouter>
