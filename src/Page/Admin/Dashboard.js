@@ -20,7 +20,6 @@ import { mainListItems, secondaryListItems } from './listItems';
 import Card from '@material-ui/core/Card';
 import CardMedia from '@material-ui/core/CardMedia';
 import Hidden from '@material-ui/core/Hidden';
-import Dashboard_Profile from './Dashboard_Profile';
 import Dashboard_Appointment from './Dashboard_Appointment';
 import ad from '../../appointment.png';
 import Profile from './Profile.js'

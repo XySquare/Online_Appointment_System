@@ -14,6 +14,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import { BrowserRouter as Router, Route, Link as RouteLink } from "react-router-dom";
 import { withStyles } from '@material-ui/core/styles';
+import { API_END_POINT } from '../Config.js';
 
 function Copyright() {
   return (
@@ -58,27 +59,27 @@ class Register extends React.Component {
 		super(props);
 
 		this.state = {
-      name: "",
+      fname: "",
+      lname: "",
 			email: "",
 			password: "",
 		};
   }
 
   register(event) {
-		this.props.history.replace("/client/dashboard");
 
-    /*let credentials = {
-			email: this.state.email,
-			password: this.state.password
+    let credentials = {
+      FirstName: this.state.fname,
+      LastName: this.state.lname,
+			Email: this.state.email,
+			Password: this.state.password
     }
     
-    let credData = { "user": credentials };
-    
 		// Check authentication with the server
-		fetch(API_END_POINT + "/login", {
-			body: JSON.stringify(credData), // must match 'Content-Type' header
+		fetch(API_END_POINT + "/signup", {
+			body: JSON.stringify(credentials), // must match 'Content-Type' header
 			cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-			credentials: 'same-origin', // include, same-origin, *omit
+			credentials: 'include', // include, same-origin, *omit
 			headers: {
 				'Accept': 'application/json',
 				'content-type': 'application/json'
@@ -94,27 +95,29 @@ class Register extends React.Component {
 						response.json().then(data => {
 							//console.log(data);
 							// Authenticate the user
-							if (data.user && data.user.auth_token) {
-								sessionStorage.setItem("a", JSON.stringify(data.user));
-								// Send them to the quiz
-								this.props.history.replace("quiz");
+							if (data.message.indexOf("Success")>=0) {
+								// Send them to the profile
+                this.props.history.replace("/client/profile");
 							}
 							else {
-								alert("Invalid Authentication");
+								alert("Invalid Authentication.");
 							}
 						})
 					}
 					else {
 						response.json().then(error => {
-							alert("Unable to login\n" + error.response);
-						})
+							alert("Unable to Register:\n" + error.message);
+						}).catch(error => {
+              console.error(error);
+              alert("Network Error.");
+            });
 					}
 				}
 			)
 			.catch(error => {
 				console.error(error);
-				alert("Network error.");
-      });*/
+				alert("Network Error.");
+      });
       
       event.preventDefault();
   }
@@ -137,33 +140,35 @@ class Register extends React.Component {
         <Typography component="h1" variant="h5">
           Sign up
         </Typography>
-        <form className={classes.form} noValidate>
+        <form className={classes.form} noValidate autocomplete="on">
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={12}>
+            <Grid item xs={12} sm={6}>
               <TextField
-                autoComplete="name"
-                name="name"
+                autoComplete="given-name"
+                name="fname"
                 variant="outlined"
                 required
                 fullWidth
-                id="name"
-                label="Name"
+                id="fname"
+                label="First Name"
                 autoFocus
-                value={ this.state.name }
+                value={ this.state.fname }
                 onChange={ this.handleChange }
               />
             </Grid>
-            {/*<Grid item xs={12} sm={6}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 variant="outlined"
                 required
                 fullWidth
-                id="lastName"
+                id="lname"
                 label="Last Name"
-                name="lastName"
-                autoComplete="lname"
+                name="lname"
+                autoComplete="family-name"
+                value={ this.state.lname }
+                onChange={ this.handleChange }
               />
-            </Grid>*/}
+            </Grid>
             <Grid item xs={12}>
               <TextField
                 variant="outlined"
@@ -206,11 +211,9 @@ class Register extends React.Component {
           </Button>
           <Grid container justify="flex-end">
             <Grid item>
-            <RouteLink to="/" >
-              <Link variant="body2">
+              <Link variant="body2" component={RouteLink} to="/">
                 Already have an account? Sign in
               </Link>
-              </RouteLink>
             </Grid>
           </Grid>
         </form>

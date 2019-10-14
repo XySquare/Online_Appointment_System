@@ -20,26 +20,26 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-export default function Deposits() {
+export default function Dashboard_Profile({userProfile}) {
   const classes = useStyles();
   return (
     <React.Fragment>
       <CardContent>
         <Title>My Profile</Title>
         <Typography component="p" variant="h5" className={classes.name}>
-          Steven
+          {userProfile.name}
       </Typography>
         <Grid container spacing={3}>
           <Grid item xs>
             <Typography color="textSecondary" variant="caption">Address</Typography>
             <Typography className={classes.depositContext}>
-              161 Barry St, Carlton VIC 3053
+              {userProfile.address}
       </Typography>
           </Grid>
           <Grid item xs={3}>
             <Typography color="textSecondary" variant="caption">Car Type</Typography>
             <Typography className={classes.depositContext}>
-              SUV
+              {userProfile.cartype}
       </Typography>
           </Grid>
         </Grid>
@@ -47,19 +47,19 @@ export default function Deposits() {
           <Grid item xs>
             <Typography color="textSecondary" variant="caption">Mobile</Typography>
             <Typography className={classes.depositContext}>
-              (+61) 0000000000
+              {userProfile.mobile}
       </Typography>
           </Grid>
           <Grid item xs>
             <Typography color="textSecondary" variant="caption">Home</Typography>
             <Typography className={classes.depositContext}>
-              (+61) 0000000000
+              {userProfile.home}
       </Typography>
           </Grid>
           <Grid item xs>
             <Typography color="textSecondary" variant="caption">Work</Typography>
             <Typography className={classes.depositContext}>
-              (+61) 0000000000
+              {userProfile.work}
       </Typography>
           </Grid>
         </Grid>

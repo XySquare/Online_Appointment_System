@@ -21,6 +21,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { withStyles } from '@material-ui/core/styles';
 import './main.scss'
+import { API_END_POINT } from '../../Config.js';
 
 const currencies = [
   {
@@ -39,16 +40,16 @@ const currencies = [
 
 const options = [
   {
-    value: '0',
+    value: '1',
     label: 'Wash outside only $15',
   },
   {
-    value: '1',
+    value: '2',
     label: 'Wash inside and outside $25',
   },
   {
-    value: '2',
-    label: 'Deluxe wash $30',
+    value: '3',
+    label: 'Deluxe wash $30 **',
   },
 ];
 
@@ -60,8 +61,8 @@ const styles = (theme => ({
     width: 'auto',
     marginLeft: theme.spacing(2),
     marginRight: theme.spacing(2),
-    [theme.breakpoints.up(800 + theme.spacing(2) * 2)]: {
-      width: 800,
+    [theme.breakpoints.up(600 + theme.spacing(2) * 2)]: {
+      width: 600,
       marginLeft: 'auto',
       marginRight: 'auto',
     },
@@ -84,15 +85,22 @@ const styles = (theme => ({
     justifyContent: 'flex-end',
   },
   button: {
-    marginTop: theme.spacing(8),
+    marginTop: theme.spacing(6),
     marginLeft: theme.spacing(1),
+  },
+  caption: {
+    marginTop: theme.spacing(2),
+  },
+  title: {
+    marginBottom: theme.spacing(4),
   },
 }));
 
 class Appointment extends React.Component {
 
-  constructor(props){
+  constructor(props) {
     super(props);
+    console.log('Appointment.constructor()')
     this.state = {
       cartype: "",
       time: null,
@@ -100,51 +108,301 @@ class Appointment extends React.Component {
       comment: "",
       calendarEvents: []
     }
+    this.existingAppointments = null;
   }
 
-  submit = () => {
-    const{classes, newSnackBar} = this.props;
-    newSnackBar();
-    this.props.history.replace("/client/dashboard");
+  componentDidMount() {
+    console.log('Appointment.componentDidMount()')
+    //let id = this.props.match.params.id;
+    this.existingAppointments = [];
+    // TODO: Fetching ALL appointments data here
+    //let range = {
+    //  "From": "2000-10-02T01:20:00.000Z",
+    //  "To": "2100-10-02T01:20:00.000Z"
+    //}
+    fetch(API_END_POINT + "/all", {
+      //body: JSON.stringify(range), // must match 'Content-Type' header
+      cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+      credentials: 'include', // include, same-origin, *omit
+      headers: {
+        'Accept': 'application/json',
+        'content-type': 'application/json'
+      },
+      method: 'GET', // *GET, POST, PUT, DELETE, etc.
+      mode: 'cors', // no-cors, cors, *same-origin
+      redirect: 'follow', // manual, *follow, error
+      referrer: 'no-referrer', // *client, no-referrer
+    })
+      .then(
+        (response) => {
+          if (response.ok) {
+            response.json().then(data => {
+              if (data.message.indexOf("Success") >= 0) {
+                let appointments = data.content;
+                for (let i in appointments) {
+                  let a = appointments[i];
+                  //console.log(a.ID,id);
+                  //if (a.ID != id) {
+                    let time = new Date(a.Time);
+                    let endDate = new Date(time.getTime() + 40 * 60000);
+                    this.existingAppointments.push({
+                      start: time,
+                      end: endDate,
+                      color: '#777777'
+                    });
+                  //}
+                }
+
+                this.populateData(this.existingAppointments);
+              }
+              else {
+                alert("Invalid Authentication:\n" + data.message);
+              }
+            })
+          }
+          else {
+            response.json().then(error => {
+              alert("Invalid Authentication:\n" + error.message);
+            }).catch(error => {
+              console.error(error);
+              alert("Network Error.");
+            });
+          }
+        }
+      )
+      .catch(error => {
+        console.error(error);
+        alert("Network Error.");
+      });
+  }
+
+  populateData(existingAppointments) {
+    let id = this.props.match.params.id;
+    if (id) {
+      // Edit appointment
+      fetch(API_END_POINT + "/appointment", {
+        //body: JSON.stringify(credentials), // must match 'Content-Type' header
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: 'include', // include, same-origin, *omit
+        headers: {
+          'Accept': 'application/json',
+          'content-type': 'application/json'
+        },
+        method: 'GET', // *GET, POST, PUT, DELETE, etc.
+        mode: 'cors', // no-cors, cors, *same-origin
+        redirect: 'follow', // manual, *follow, error
+        referrer: 'no-referrer', // *client, no-referrer
+      })
+        .then(
+          (response) => {
+            if (response.ok) {
+              response.json().then(data => {
+                if (data.message.indexOf("Success") >= 0) {
+                  let appointments = data.content;
+                  let userAppointment = null;
+                  let time = null;
+                  for (let i in appointments) {
+                    let a = appointments[i];
+                    if (a.ID == id) {
+                      userAppointment = a;
+                      time = new Date(a.Time);
+                      break;
+                    }
+                  }
+                  for (let j in existingAppointments) {
+                    let a = existingAppointments[j];
+                    if (a.start.getTime() == time.getTime()) {
+                      existingAppointments.splice(j, 1)
+                      break;
+                    }
+                  }
+                  let endDate = new Date(time.getTime() + 40 * 60000);
+                  this.setState({
+                    cartype: userAppointment.CarType,
+                    time: time,
+                    option: userAppointment.Option,
+                    comment: userAppointment.Comment,
+                    calendarEvents: [
+                      ...existingAppointments,
+                      {
+                        start: time,
+                        end: endDate,
+                        color: '#3f51b5'
+                      }
+                    ]
+                  });
+                }
+                else {
+                  alert("Invalid Authentication:\n" + data.message);
+                }
+              })
+            }
+            else {
+              response.json().then(error => {
+                alert("Invalid Authentication:\n" + error.message);
+              }).catch(error => {
+                console.error(error);
+                alert("Network Error.");
+              });
+            }
+          }
+        )
+        .catch(error => {
+          console.error(error);
+          alert("Network Error.");
+        });
+    }
+    else {
+      // Fetch user data
+      fetch(API_END_POINT + "/profile", {
+        //body: JSON.stringify(credentials), // must match 'Content-Type' header
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: 'include', // include, same-origin, *omit
+        headers: {
+          'Accept': 'application/json',
+          'content-type': 'application/json'
+        },
+        method: 'GET', // *GET, POST, PUT, DELETE, etc.
+        mode: 'cors', // no-cors, cors, *same-origin
+        redirect: 'follow', // manual, *follow, error
+        referrer: 'no-referrer', // *client, no-referrer
+      })
+        .then(
+          (response) => {
+            if (response.ok) {
+              response.json().then(data => {
+                //console.log(data);
+                // Authenticate the user
+                if (data.message.indexOf("Success") >= 0) {
+                  let userProfile = data.content;
+
+                  this.setState(
+                    {
+                      cartype: userProfile.CarType,
+                      calendarEvents: existingAppointments,
+                    }
+                  );
+                }
+              })
+            }
+          }
+        )
+        .catch(error => {
+          console.error(error);
+        });
+    }
   }
 
   handleChange = event => {
     this.setState({
-        [event.target.name]: event.target.value,
+      [event.target.name]: event.target.value,
     });
   }
 
-  onSelectTime = event =>{
+  onSelectTime = event => {
     console.log(event);
-    if(event.start.getTime() < new Date().getTime())
+    // Prevent from selecting the time before NOW
+    if (event.start.getTime() < new Date().getTime())
       return false;
-    let endDate = new Date(event.start.getTime() + 40*60000);
+    //if (event.start.getMinutes() != 0)
+    //  return false;
+    // Prevent from selecting existing appointments
+    for (let i in this.existingAppointments) {
+      let a = this.existingAppointments[i];
+      if (event.start.getTime() >= a.start.getTime() && event.start.getTime() <= a.end.getTime())
+        return false;
+    }
+    // Set minute to 0
+    event.start.setMinutes(0);
+    let endDate = new Date(event.start.getTime() + 40 * 60000);
     //let options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     this.setState({
       time: event.start,
-      calendarEvents: [ // initial event data
-        { 
+      calendarEvents: [
+        ...this.existingAppointments, // Existing appointments
+        {
           //title: event.start.toLocaleDateString('en-au', options), 
-          start: event.start, 
+          start: event.start,
           end: endDate,
           color: '#3f51b5'
         }
       ]
-  });
-  return false;
+    });
+    return false;
   }
 
-  render(){
+  submit = () => {
+    const { classes, newSnackBar } = this.props;
+    let id = this.props.match.params.id;
+    // TODO: Post appointment data here
+    let appointment = id ? {
+      ID: parseInt(id),
+      CarType: this.state.cartype,
+      Time: this.state.time,
+      Option: parseInt(this.state.option),
+      Comment: this.state.comment,
+    }:{
+      CarType: this.state.cartype,
+      Time: this.state.time,
+      Option: parseInt(this.state.option),
+      Comment: this.state.comment,
+    }
+
+    fetch(API_END_POINT + "/appointment", {
+      body: JSON.stringify(appointment), // must match 'Content-Type' header
+      cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+      credentials: 'include', // include, same-origin, *omit
+      headers: {
+        'Accept': 'application/json',
+        'content-type': 'application/json'
+      },
+      method: id ? 'PUT' : 'POST', // *GET, POST, PUT, DELETE, etc.
+      mode: 'cors', // no-cors, cors, *same-origin
+      redirect: 'follow', // manual, *follow, error
+      referrer: 'no-referrer', // *client, no-referrer
+    })
+      .then(
+        (response) => {
+          if (response.ok) {
+            response.json().then(data => {
+              //console.log(data);
+              // Authenticate the user
+              if (data.message.indexOf("Success") >= 0) {
+                newSnackBar("Booking Succeed.");
+                this.props.history.replace("/client/dashboard");
+              }
+              else {
+                alert("Error:\n" + data.message);
+              }
+            })
+          }
+          else {
+            response.json().then(error => {
+              alert("Error:\n" + error.message);
+            }).catch(error => {
+              console.error(error);
+              alert("Network Error.");
+            });
+          }
+        }
+      )
+      .catch(error => {
+        console.error(error);
+        alert("Network Error.");
+      });
+  }
+
+  render() {
     const { classes } = this.props;
 
-  return (
-    <React.Fragment>
-      <CssBaseline />
+    return (
+      <React.Fragment>
+        <CssBaseline />
 
-      <main className={classes.layout}>
-        <Paper className={classes.paper}>
-          <Typography component="h1" variant="h5" align="left">
-            Appointment
+        <main className={classes.layout}>
+          <Paper className={classes.paper}>
+            <Typography component="h1" variant="h5" align="left" className={classes.title}>
+              Appointment
           </Typography>
             <React.Fragment>
               <Grid container spacing={3}>
@@ -155,10 +413,9 @@ class Appointment extends React.Component {
                     select
                     required
                     label="Car Type"
-                    value={ this.state.cartype }
-                onChange={ this.handleChange }
+                    value={this.state.cartype}
+                    onChange={this.handleChange}
                     fullWidth
-                    margin={'normal'}
                   >
                     {currencies.map(option => (
                       <MenuItem key={option.value} value={option.value}>
@@ -168,21 +425,21 @@ class Appointment extends React.Component {
                   </TextField>
                 </Grid>
                 <Grid item xs={12} sm={12}>
-                <Typography component="h1" variant="subtitle1" align="left">
-            Please select a time.
+                  <Typography component="h1" variant="subtitle1" align="left">
+                    Please select a time.
           </Typography>
-                <FullCalendar 
-                nowIndicator={true}
-                selectable={true}
-                header={{left:''}}
-                slotDuration = {'00:20:00'}
-                minTime = {'08:00:00'}
-                maxTime = {'20:00:00'}
-                allDaySlot = {false}
-                defaultView="timeGridWeek" 
-                plugins={[ timeGridPlugin, interactionPlugin ]} 
-                events={ this.state.calendarEvents }
-                selectAllow={this.onSelectTime}/>
+                  <FullCalendar
+                    nowIndicator={true}
+                    selectable={true}
+                    header={{ left: '' }}
+                    slotDuration={'00:30:00'}
+                    minTime={'09:00:00'}
+                    maxTime={'17:00:00'}
+                    allDaySlot={false}
+                    defaultView="timeGridWeek"
+                    plugins={[timeGridPlugin, interactionPlugin]}
+                    events={this.state.calendarEvents}
+                    selectAllow={this.onSelectTime} />
                 </Grid>
                 <Grid item xs={12} sm={12}>
                   <TextField
@@ -191,8 +448,8 @@ class Appointment extends React.Component {
                     select
                     required
                     label="Pricing Option"
-                    value={ this.state.option }
-                onChange={ this.handleChange }
+                    value={this.state.option}
+                    onChange={this.handleChange}
                     fullWidth
                   >
                     {options.map(option => (
@@ -209,13 +466,18 @@ class Appointment extends React.Component {
                     multiline
                     rows="4"
                     label="Comment"
-                    value={ this.state.comment }
-                onChange={ this.handleChange }
+                    value={this.state.comment}
+                    onChange={this.handleChange}
                     fullWidth
                   >
                   </TextField>
                 </Grid>
               </Grid>
+              <Typography component="p" variant="caption" align="left" color="textSecondary" className={classes.caption}>
+                * Required
+                <br />
+                ** Deluxe wash: washing inside and outside and the car is very dirty
+          </Typography>
               <div className={classes.buttons}>
                 <Button
                   variant="contained"
@@ -227,11 +489,11 @@ class Appointment extends React.Component {
                 </Button>
               </div>
             </React.Fragment>
-        </Paper>
-      </main>
-    </React.Fragment>
-  );
-}
+          </Paper>
+        </main>
+      </React.Fragment>
+    );
+  }
 }
 
 export default withStyles(styles)(Appointment);

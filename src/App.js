@@ -3,6 +3,7 @@ import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
 import Login from './Page/Login.js'
 import Register from './Page/Register.js'
 import Dashboard from './Page/Client/Dashboard.js'
+import ADashboard from './Page/Admin/Dashboard.js'
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
         <Route path="/" exact component={Login} />
         <Route path="/register" exact component={Register} />
         <Route path="/client" component={Dashboard} />
+        <Route path="/admin" component={ADashboard} />
         <PrivateRoute path="/dummy" component={Login} />
         <Route render={props => <Redirect to={{pathname: "/",}}/>} />
       </Switch>

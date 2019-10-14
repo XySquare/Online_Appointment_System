@@ -13,6 +13,7 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import { BrowserRouter as Router, Route, Link as RouteLink } from "react-router-dom";
+import { API_END_POINT } from '../Config.js';
 
 function Copyright() {
   return (
@@ -68,20 +69,16 @@ class Login extends React.Component {
   }
 
   login(event) {
-		this.props.history.replace("/client/dashboard");
-
-    /*let credentials = {
-			email: this.state.email,
-			password: this.state.password
+    let credentials = {
+			Email: this.state.email,
+			Password: this.state.password
     }
     
-    let credData = { "user": credentials };
-    
 		// Check authentication with the server
-		fetch(API_END_POINT + "/login", {
-			body: JSON.stringify(credData), // must match 'Content-Type' header
+		fetch(API_END_POINT + "/signin", {
+			body: JSON.stringify(credentials), // must match 'Content-Type' header
 			cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-			credentials: 'same-origin', // include, same-origin, *omit
+			credentials: 'same-origin', // including cookie //include, same-origin, *omit
 			headers: {
 				'Accept': 'application/json',
 				'content-type': 'application/json'
@@ -93,31 +90,39 @@ class Login extends React.Component {
 		})
 			.then(
 				(response) => {
+          //console.log(response);
 					if (response.ok) {
 						response.json().then(data => {
 							//console.log(data);
 							// Authenticate the user
-							if (data.user && data.user.auth_token) {
-								sessionStorage.setItem("a", JSON.stringify(data.user));
-								// Send them to the quiz
-								this.props.history.replace("quiz");
-							}
-							else {
-								alert("Invalid Authentication");
-							}
+							//if (data.message.indexOf("Success")>=0) {
+                // Send them to the dashboard
+                if(data.content && data.content.Admin)
+                  this.props.history.replace("/admin/dashboard");
+                else
+                  this.props.history.replace("/client/dashboard");
+							//}
+							//else {
+              //  console.log(data);
+								//alert("Invalid Authentication");
+							//}
 						})
 					}
 					else {
+            //alert("Unable to Login.");
 						response.json().then(error => {
-							alert("Unable to login\n" + error.response);
-						})
+							alert("Unable to Login:\n" + error.message);
+						}).catch(error => {
+              console.error(error);
+              alert("Network Error.");
+            });
 					}
 				}
 			)
 			.catch(error => {
 				console.error(error);
-				alert("Network error.");
-      });*/
+				alert("Network Error.");
+      });
       
       event.preventDefault();
   }
@@ -190,10 +195,8 @@ class Login extends React.Component {
                 </Link>
               </Grid>
               <Grid item>
-                <Link variant="body2">
-                <RouteLink to="/register" >
+                <Link variant="body2" component={RouteLink} to="/register">
                 {"Don't have an account? Sign Up"}
-                </RouteLink>
                 </Link>
               </Grid>
             </Grid>
