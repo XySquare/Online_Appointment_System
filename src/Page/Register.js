@@ -97,7 +97,7 @@ class Register extends React.Component {
 							// Authenticate the user
 							if (data.message.indexOf("Success")>=0) {
 								// Send them to the profile
-                this.props.history.replace("/client/profile");
+                this.props.history.replace("/");
 							}
 							else {
 								alert("Invalid Authentication.");

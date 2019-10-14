@@ -100,7 +100,7 @@ class Login extends React.Component {
                 if(data.content && data.content.Admin)
                   this.props.history.replace("/admin/dashboard");
                 else
-                  this.props.history.replace("/client/dashboard");
+                  this.props.history.replace("/client/profile");
 							//}
 							//else {
               //  console.log(data);
