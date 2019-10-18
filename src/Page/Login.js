@@ -20,7 +20,7 @@ function Copyright() {
     <Typography variant="body2" color="textSecondary" align="center">
       {'Copyright © '}
       <Link color="inherit" href="#">
-        Your Website
+      Gabriel and David
       </Link>{' '}
       {new Date().getFullYear()}
       {'.'}
@@ -33,10 +33,12 @@ const styles = (theme => ({
     height: '100vh',
   },
   image: {
-    backgroundImage: 'url(https://source.unsplash.com/random)',
+    backgroundImage: 'url(https://source.unsplash.com/w9e8RGOiPiM)',
     backgroundRepeat: 'no-repeat',
     backgroundSize: 'cover',
     backgroundPosition: 'center',
+    padding: theme.spacing(1),
+    color: '#FFF',
   },
   paper: {
     margin: theme.spacing(8, 4),
@@ -138,7 +140,14 @@ class Login extends React.Component {
 
     return <Grid container component="main" className={classes.root}>
       <CssBaseline />
-      <Grid item xs={false} sm={4} md={7} className={classes.image} />
+      <Grid item xs={false} sm={4} md={7} className={classes.image}>
+        <Typography component="h1" variant="h2">
+            Gabriel and David
+          </Typography>
+        <Typography component="h1" variant="h3">
+            Car Washing
+          </Typography>
+      </Grid>
       <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
         <div className={classes.paper}>
           <Avatar className={classes.avatar}>

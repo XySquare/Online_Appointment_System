@@ -25,19 +25,21 @@ import Dashboard_Appointment from './Dashboard_Appointment';
 import ad from '../../appointment.png';
 import Profile from './Profile.js'
 import Appointment from './Appointment.js'
-import { BrowserRouter as Router, Route, Link, Switch } from "react-router-dom";
+import { BrowserRouter as Router, Route, Link as RouteLink, Switch } from "react-router-dom";
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import Snackbar from '@material-ui/core/Snackbar';
 import { withStyles } from '@material-ui/core/styles';
 import { API_END_POINT } from '../../Config.js';
+import Link from '@material-ui/core/Link';
 
 
 function Copyright() {
   return (
     <Typography variant="body2" color="textSecondary" align="center">
       {'Copyright © '}
-
-      Your Website
+      <Link color="inherit" href="#">
+      Gabriel and David
+      </Link>
       {' '}
       {new Date().getFullYear()}
       {'.'}
@@ -202,7 +204,7 @@ class Dashboard extends React.Component {
             <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
               Dashboard
           </Typography>
-            <IconButton color="inherit" component={Link} to="/">
+            <IconButton color="inherit" component={RouteLink} to="/">
               <ExitToAppIcon />
             </IconButton>
           </Toolbar>
