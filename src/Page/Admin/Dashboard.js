@@ -21,7 +21,6 @@ import Card from '@material-ui/core/Card';
 import CardMedia from '@material-ui/core/CardMedia';
 import Hidden from '@material-ui/core/Hidden';
 import Dashboard_Appointment from './Dashboard_Appointment';
-import ad from '../../appointment.png';
 import Profile from './Profile.js'
 import Appointment from './Appointment.js'
 import { BrowserRouter as Router, Route, Link, Switch } from "react-router-dom";
